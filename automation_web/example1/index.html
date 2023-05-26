@@ -1,0 +1,19 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Inspect Network Resource</title>
+</head>
+<body>
+  <h1>Inspect Network Resource</h1>
+  <p>Select a resource from the network tab in the browser's developer tools.</p>
+  <button onclick="fetchResource()">Fetch Resource</button>
+  <div id="headersContainer" style="display: none;">
+    <h2>Response Headers:</h2>
+    <p><strong>Content-Type:</strong> <span id="contentType"></span></p>
+    <p><strong>Last-Modified:</strong> <span id="lastModified"></span></p>
+  </div>
+  <script src="script/main.js"></script>
+
+</body>
+</html>
