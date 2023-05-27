@@ -1,0 +1,30 @@
+.maze {
+    display: grid;
+    grid-template-columns: repeat(6, 50px);
+    grid-template-rows: repeat(6, 50px);
+    gap: 1px;
+    background-color: black;
+  }
+  
+  .maze-cell {
+    background-color: white;
+  }
+  
+  .maze-cell.start {
+    background-color: green;
+  }
+  
+  .maze-cell.end {
+    background-color: red;
+  }
+  
+  .maze-cell.rat {
+    background-color: yellow;
+    animation: moveRatAnimation 0.2s linear infinite;
+  }
+  
+  @keyframes moveRatAnimation {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
