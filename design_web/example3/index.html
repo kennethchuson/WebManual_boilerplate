@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Bubble Sort Animation</title>
+  <style>
+    #container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      height: 400px;
+    }
+
+    .bar {
+      width: 20px;
+      margin: 0 1px;
+      background-color: #007bff;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Bubble Sort Animation</h1>
+  <div id="container"></div>
+  <button id="startBtn">Start</button>
+  <button id="stopBtn">Stop</button>
+  <button id="speedUpBtn">Speed Up</button>
+  <button id="speedDownBtn">Speed Down</button>
+
+  <script>
+    let intervalId;
+    let speed = 200; // Delay in milliseconds between each step
+
+    function delay(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async function bubbleSortAnimation(array) {
+      const container = document.getElementById('container');
+      container.innerHTML = '';
+
+      // Create the bars representing the array elements
+      for (let i = 0; i < array.length; i++) {
+        const bar = document.createElement('div');
+        bar.style.height = array[i] * 5 + 'px'; // Adjust the height of the bars for visualization
+        bar.className = 'bar';
+        container.appendChild(bar);
+      }
+
+      // Bubble Sort Algorithm
+      const n = array.length;
+      for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+          // Highlight the bars being compared
+          const bars = document.getElementsByClassName('bar');
+          bars[j].style.backgroundColor = '#dc3545';
+          bars[j + 1].style.backgroundColor = '#dc3545';
+
+          // Delay for visualization
+          await delay(speed);
+
+          if (array[j] > array[j + 1]) {
+            // Swap the elements in the array
+            let temp = array[j];
+            array[j] = array[j + 1];
+            array[j + 1] = temp;
+
+            // Update the heights of the bars
+            bars[j].style.height = array[j] * 5 + 'px';
+            bars[j + 1].style.height = array[j + 1] * 5 + 'px';
+          }
+
+          // Reset the color of the bars
+          bars[j].style.backgroundColor = '#007bff';
+          bars[j + 1].style.backgroundColor = '#007bff';
+
+          // Check if the Stop button was clicked
+          if (stopAnimation) {
+            clearInterval(intervalId);
+            return;
+          }
+        }
+      }
+    }
+
+    // Button event listeners
+    document.getElementById('startBtn').addEventListener('click', () => {
+      stopAnimation = false;
+      bubbleSortAnimation(array);
+    });
+
+    document.getElementById('stopBtn').addEventListener('click', () => {
+      stopAnimation = true;
+    });
+
+    document.getElementById('speedUpBtn').addEventListener('click', () => {
+      speed -= 50;
+      if (speed < 0) {
+        speed = 0;
+      }
+    });
+
+    document.getElementById('speedDownBtn').addEventListener('click', () => {
+      speed += 50;
+    });
+
+    // Example usage
+    const array = [5, 3, 8, 4, 2, 9, 1, 6, 7];
+    let stopAnimation = false;
+  </script>
+</body>
+
+</html>
