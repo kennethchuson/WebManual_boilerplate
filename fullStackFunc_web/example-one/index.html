@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Collaboration Todo List</title>
+  <style>
+    #canvas {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <h1>Collaboration Todo List</h1>
+
+  <input type="text" id="newTodoInput" placeholder="Add a new todo">
+  <button onclick="addTodo()">Add</button>
+
+  <ul id="todoList"></ul>
+
+  <h2>Drawing Collaboration</h2>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  
+
+  <script>
+    const newTodoInput = document.getElementById('newTodoInput');
+    const todoList = document.getElementById('todoList');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const ws = new WebSocket('ws://localhost:3000');
+
+    ws.addEventListener('message', (message) => {
+    const data = JSON.parse(message.data);
+
+    if (data.type === 'init') {
+        // Initialize the todo list with existing data
+        data.data.forEach((todo) => {
+        addTodoToList(todo);
+        });
+    } else if (data.type === 'add') {
+        // Add the new todo to the list
+        addTodoToList(data.data);
+    } else if (data.type === 'draw') {
+        // Draw the received drawing data
+        const { fromX, fromY, toX, toY } = data.data;
+        drawLine(fromX, fromY, toX, toY);
+    }
+    });
+
+    function addTodo() {
+        const text = newTodoInput.value.trim();
+        if (text !== '') {
+            const data = {
+            type: 'add',
+            text: text
+            };
+            ws.send(JSON.stringify(data));
+            newTodoInput.value = '';
+        }
+    }
+
+    function addTodoToList(todo) {
+        const li = document.createElement('li');
+        li.textContent = todo.text;
+        todoList.appendChild(li);
+    }
+
+    function drawLine(fromX, fromY, toX, toY) {
+        ctx.beginPath();
+        ctx.moveTo(fromX, fromY);
+        ctx.lineTo(toX, toY);
+        ctx.stroke();
+    }
+
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    function startDrawing(e) {
+        isDrawing = true;
+        [lastX, lastY] = [e.offsetX, e.offsetY];
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+
+        const data = {
+            type: 'draw',
+            data: {
+                fromX: lastX,
+                fromY: lastY,
+                toX: e.offsetX,
+                toY: e.offsetY
+            }
+        };
+        ws.send(JSON.stringify(data));
+
+        drawLine(lastX, lastY, e.offsetX, e.offsetY);
+
+        [lastX, lastY] = [e.offsetX, e.offsetY];
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+    }
+
+
+  </script>
+</body>
+</html>
