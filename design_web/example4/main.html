@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Folder Structure</title>
+    <style>
+        ul {
+            list-style-type: none;
+        }
+
+        ul ul {
+            margin-left: 20px;
+        }
+
+        .folder {
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>Add New Element</h2>
+    <label for="elementType">Type:</label>
+    <select id="elementType">
+        <option value="folder">Folder</option>
+        <option value="file">File</option>
+    </select>
+    <label for="elementLocation">Location:</label>
+    <select id="elementLocation">
+        <option value="root">Root</option>
+        <option value="subfolder">Subfolder</option>
+    </select>
+    <input type="text" id="elementName" placeholder="Element Name">
+    <input type="number" id="elementLevel" placeholder="Path Level (Starting from 1)">
+    <button onclick="addElement()">Add Element</button>
+
+    <ul id="folderStructure"></ul>
+
+    <script>
+        // Folder structure data (example)
+        var folderData = {
+            name: "Root",
+            type: "folder",
+            children: [
+                {
+                    name: "Subfolder 1",
+                    type: "folder",
+                    children: [
+                        {
+                            name: "Subfolder 1.1",
+                            type: "folder",
+                            children: [
+                                {
+                                    name: "File 1.1.1",
+                                    type: "file"
+                                },
+                                {
+                                    name: "File 1.1.2",
+                                    type: "file"
+                                }
+                            ]
+                        },
+                        {
+                            name: "File 1.2",
+                            type: "file"
+                        }
+                    ]
+                },
+                {
+                    name: "Subfolder 2",
+                    type: "folder",
+                    children: [
+                        {
+                            name: "File 2.1",
+                            type: "file"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Function to generate folder structure recursively
+        function generateFolderStructure(data, parentElement) {
+            var ul = document.createElement("ul");
+
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                var li = document.createElement("li");
+
+                if (item.type === "folder") {
+                    var span = document.createElement("span");
+                    span.innerHTML = item.name;
+                    span.classList.add("folder");
+                    li.appendChild(span);
+
+                    if (item.children && item.children.length > 0) {
+                        var childUl = generateFolderStructure(item.children, li);
+                        childUl.style.display = "none";
+                    }
+                } else if (item.type === "file") {
+                    li.innerHTML = item.name;
+                }
+
+                ul.appendChild(li);
+            }
+
+            parentElement.appendChild(ul);
+            return ul;
+        }
+
+        // Function to toggle the display of subfolders
+        function toggleSubfolders(event) {
+            if (event.target.tagName === "SPAN") {
+                var ul = event.target.nextElementSibling;
+                if (ul) {
+                    ul.style.display = ul.style.display === "none" ? "block" : "none";
+                }
+            }
+        }
+
+        // Generate the folder structure
+        var folderStructure = document.getElementById("folderStructure");
+        var rootUl = generateFolderStructure([folderData], folderStructure);
+
+        // Add event listener for folder clicks
+        rootUl.addEventListener("click", toggleSubfolders);
+
+        // Function to find the target folder by path level
+        function findTargetFolderByLevel(targetUl, level) {
+            var liElements = targetUl.getElementsByTagName("li");
+            var levelCount = 1;
+
+            for (var i = 0; i < liElements.length; i++) {
+                var li = liElements[i];
+                var span = li.querySelector("span.folder");
+
+                if (span) {
+                    if (levelCount === level) {
+                        return li;
+                    }
+                    levelCount++;
+                }
+            }
+
+            return null;
+        }
+
+        // Function to add a new element to the folder structure
+        function addElement() {
+            var elementType = document.getElementById("elementType").value;
+            var elementLocation = document.getElementById("elementLocation").value;
+            var elementName = document.getElementById("elementName").value.trim();
+            var elementLevel = parseInt(document.getElementById("elementLevel").value, 10);
+
+            if (elementName === "") {
+                alert("Please enter a valid name for the element.");
+                return;
+            }
+
+            if (isNaN(elementLevel) || elementLevel < 1) {
+                alert("Please enter a valid path level for the element (starting from 1).");
+                return;
+            }
+
+            if (elementType === "file" && elementLocation === "file") {
+                alert("Cannot add a file inside another file.");
+                return;
+            }
+
+            var targetUl;
+            if (elementLocation === "root") {
+                targetUl = rootUl;
+            } else {
+                var selectedElement = document.querySelector("li span.folder.active");
+                if (!selectedElement) {
+                    alert("Please select a subfolder.");
+                    return;
+                }
+                targetUl = selectedElement.nextElementSibling;
+            }
+
+            var targetFolder = findTargetFolderByLevel(targetUl, elementLevel);
+
+            if (targetFolder === null) {
+                alert("Invalid path level. The specified level does not exist.");
+                return;
+            }
+
+            var newElement = {
+                name: elementName,
+                type: elementType
+            };
+
+            var newLi = document.createElement("li");
+            if (elementType === "folder") {
+                var newSpan = document.createElement("span");
+                newSpan.innerHTML = newElement.name;
+                newSpan.classList.add("folder");
+                newLi.appendChild(newSpan);
+
+                var newUl = document.createElement("ul");
+                newLi.appendChild(newUl);
+            } else if (elementType === "file") {
+                newLi.innerHTML = newElement.name;
+            }
+
+            targetFolder.appendChild(newLi);
+        }
+    </script>
+</body>
+</html>
